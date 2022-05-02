@@ -54,9 +54,43 @@ router.post('/', (req,res) => {
         });
 });
 
+//login route
+router.post('/login', (req,res) => {
+    //query op
+    User.findOne({
+        where: {
+            email: req.body.email
+        }
+    }).then(dbUserData => {
+        if (!dbUserData) {
+            res.status(400).json({
+                message: 'No user with that email exists!'
+            });
+            return;
+        }
+
+        //verify user
+        const validPassword = dbUserData.checkPassword(req.body.password);
+
+        if (!validPassword) {
+            res.status(400).json({
+                message: 'That password does not match our records, please try again.'
+            });
+            return;
+        }
+
+        res.json({ 
+            user: dbUserData,
+            message: "You're now logged in!"
+        });
+    });
+});
+
 //put /api/users/1
 router.put('/:id', (req,res) => {
+    //pass in req.body to only update what's passed through
     User.update(req.body, {
+        individualHooks: true,
         where: {
             id: req.params.id
         }
