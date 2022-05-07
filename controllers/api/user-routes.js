@@ -65,7 +65,15 @@ router.post('/', (req, res) => {
     email: req.body.email,
     password: req.body.password,
   })
-    .then(dbUserData => res.json(dbUserData))
+    .then(dbUserData => {
+      req.session.save(() => {
+        res.session.user_id = dbUserData.id;
+        res.session.username = dbUserData.username;
+        res.session.loggedIn = true;
+
+        res.json(dbUserData);
+      });
+    })
     .catch(err => {
       console.log(err);
       res.status(500).json({ error: err.message });
@@ -98,11 +106,29 @@ router.post('/login', (req, res) => {
       return;
     }
 
-    res.json({
-      user: dbUserData,
-      message: "You're now logged in!",
+    req.session.save(() => {
+      //declare session vars
+      req.session.user_id = dbUserData.id;
+      req.session.username = dbUserData.username;
+      res.session.loggedIn = true;
+
+      res.json({
+        user: dbUserData,
+        message: "You're now logged in!",
+      });
     });
   });
+});
+
+//logout
+router.post('/logout', (req, res) => {
+  if (req.session.loggedIn) {
+    req.session.destroy(() => {
+      res.status(204).end();
+    });
+  } else {
+    res.status(404).end();
+  }
 });
 
 //put /api/users/1
