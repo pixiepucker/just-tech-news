@@ -1,74 +1,71 @@
-//requirements
 const { Model, DataTypes } = require('sequelize');
 const sequelize = require('../config/connection');
-
-//create Post model
+// create our Post model
 class Post extends Model {
   static upvote(body, models) {
     return models.Vote.create({
       user_id: body.user_id,
-      post_id: body.post_id,
+      post_id: body.post_id
     }).then(() => {
       return Post.findOne({
         where: {
-          id: body.post_id,
+          id: body.post_id
         },
         attributes: [
           'id',
           'post_url',
           'title',
           'created_at',
-          [
-            sequelize.literal(
-              '(SELECT COUNT (*) FROM vote WHERE post.id = vote.post_id)'
-            ),
-            'vote_count',
-          ],
+          [sequelize.literal('(SELECT COUNT(*) FROM vote WHERE post.id = vote.post_id)'), 'vote_count']
         ],
+        include: [
+          {
+            model: models.Comment,
+            attributes: ['id', 'comment_text', 'post_id', 'user_id', 'created_at'],
+            include: {
+              model: models.User,
+              attributes: ['username']
+            }
+          }
+        ]
       });
     });
   }
 }
 
-//create fields/cols for Post model
+// create fields/columns for Post model
 Post.init(
   {
-    //id col
     id: {
       type: DataTypes.INTEGER,
       allowNull: false,
       primaryKey: true,
-      autoIncrement: true,
+      autoIncrement: true
     },
-    //title col
     title: {
       type: DataTypes.STRING,
-      allowNull: false,
+      allowNull: false
     },
-    //url col
     post_url: {
       type: DataTypes.STRING,
       allowNull: false,
       validate: {
-        isURL: true,
-      },
+        isURL: true
+      }
     },
-    //user id col
     user_id: {
       type: DataTypes.INTEGER,
-      //foreign key
       references: {
         model: 'user',
-        key: 'id',
-      },
-    },
+        key: 'id'
+      }
+    }
   },
-  //2nd POST model obj
   {
     sequelize,
     freezeTableName: true,
     underscored: true,
-    modelName: 'post',
+    modelName: 'post'
   }
 );
 

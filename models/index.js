@@ -1,63 +1,69 @@
-//requirements
-const User = require('./User');
+// import all models
 const Post = require('./Post');
+const User = require('./User');
 const Vote = require('./Vote');
 const Comment = require('./Comment');
 
-//create associations of one-to-many rel
+// create associations
 User.hasMany(Post, {
-  foreignKey: 'user_id',
+  foreignKey: 'user_id'
 });
 
-//reverse association
 Post.belongsTo(User, {
   foreignKey: 'user_id',
+  onDelete: 'SET NULL'
 });
 
-//create associations of many-to-many rel
 User.belongsToMany(Post, {
   through: Vote,
   as: 'voted_posts',
+
   foreignKey: 'user_id',
+  onDelete: 'SET NULL'
 });
 
-//reverse association
 Post.belongsToMany(User, {
   through: Vote,
   as: 'voted_posts',
   foreignKey: 'post_id',
+  onDelete: 'SET NULL'
 });
 
 Vote.belongsTo(User, {
   foreignKey: 'user_id',
+  onDelete: 'SET NULL'
 });
 
 Vote.belongsTo(Post, {
   foreignKey: 'post_id',
+  onDelete: 'SET NULL'
 });
 
 User.hasMany(Vote, {
-  foreignKey: 'user_id',
+  foreignKey: 'user_id'
 });
 
 Post.hasMany(Vote, {
-  foreignKey: 'post_id',
+  foreignKey: 'post_id'
 });
 
 Comment.belongsTo(User, {
   foreignKey: 'user_id',
+  onDelete: 'SET NULL'
 });
 
 Comment.belongsTo(Post, {
   foreignKey: 'post_id',
+  onDelete: 'SET NULL'
 });
 
 User.hasMany(Comment, {
   foreignKey: 'user_id',
+  onDelete: 'SET NULL'
 });
 
 Post.hasMany(Comment, {
-  foreignKey: 'post_id',
+  foreignKey: 'post_id'
 });
 
 module.exports = { User, Post, Vote, Comment };
